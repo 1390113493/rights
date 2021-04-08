@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>话题审核</title>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+</head>
+<body>
+<br>
+
+<div class="layui-form">
+    <table class="layui-table" width="98%">
+        <tbody>
+        <tr>
+            <td width="60px">用户名称</td>
+            <td>{{ name }}</td>
+            <td>学号</td>
+            <td>{{ stu_id }}</td>
+        </tr>
+        <tr>
+            <td>发布时间</td>
+            <td>{{ time }}</td>
+            <td>真实姓名</td>
+            <td>{{ real_name }}</td>
+        </tr>
+        <tr>
+            <td>标题</td>
+            <td><b>{{ title }}</b></td>
+            <td>分类</td>
+            <td>{{ cate }}</td>
+        </tr>
+        <tr>
+            <td>内容</td>
+            <td colspan="3">
+                <div style="word-break: break-all; word-wrap:break-word;">{{ content }}</div>
+            </td>
+        </tr>
+        {% if imgs %}
+            <tr>
+                <td>图片</td>
+                <td colspan="3">
+                    {% for i in imgs %}
+                        <img src="/{{ i }}">
+                    {% endfor %}
+
+                </td>
+            </tr>
+        {% endif %}
+
+        <tr>
+            <td>审核状况</td>
+            <td colspan="3">
+                <div class="layui-form-item" onclick="change()">
+                    <div class="layui-form-item">
+                        <input type="hidden" name="id" value="{{ id }}">
+                        <div class="layui-input-block">
+
+                            <input type="radio" name="check" value="-1" title="审核不通过"
+                                   {% if check == -1 %}checked{% endif %} {% if check == -1 %} disabled {% endif %}>
+
+                        {% if type == 1 %}
+                            <input type="radio" name="check" value="0" title="未审核"
+                                   {% if check == 0 %}checked{% endif %} disabled>
+                            <input type="radio" name="check" value="1" title="审核通过"
+                                   {% if check == 1 %}checked{% endif %}
+                                   {% if check == 1 or check == 3%}disabled{% endif %}
+                                    {% if type == 2 and check == 2%}disabled{% endif %}>
+                            <input type="radio" name="check" value="2" title="提交二审"
+                                   {% if check == 2 %}checked{% endif %}
+                                   {% if check == 2 or  check == 3 %}disabled{% endif %}>
+                            <input type="radio" name="check" value="3" title="二审通过"
+                                   {% if check == 3 %}checked{% endif %} {% if type == 1 or check == 3 %}disabled{% endif %}>
+                        {% endif %}
+                        {% if type == 2 %}
+                            <input type="radio" name="check" value="2" title="未审核"
+                                   {% if check == 2 %}checked{% endif %}
+                                   {% if check == 1 or check == 2 or  check == 3 %}disabled{% endif %}>
+                            <input type="radio" name="check" value="3" title="审核通过"
+                                   {% if check == 3 %}checked{% endif %} {% if type == 1 or check == 3 %}disabled{% endif %}>
+                        {% endif %}
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% if reply %}
+            <tr>
+                <td>回复内容</td>
+                <td colspan="3">
+                    <div class="layui-form-item">
+                        <textarea name="reply" id="reply"
+                                  style="width: 400px;height:80px;">{% if check == 1 or check == 3 %}{% if replycontent %}{{ replycontent }}{% endif %}{% endif %}</textarea>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">只有审核通过才需要回复</div>
+                </td>
+            </tr>
+            {% if replyname %}
+                <tr>
+                    <td>审核人员</td>
+                    <td colspan="3">{{ replyname }}</td>
+                </tr>
+            {% endif %}
+
+        {% endif %}
+
+
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://www.layuicdn.com/layui/layui.js"></script>
+<script src="/media/jquery-2.1.1.min.js"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate'], function () {
+        var form = layui.form
+            , layer = layui.layer
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+//监听提交
+
+    })
+</script>
+<script>
+    //Demo
+    layui.use('form', function () {
+        var form = layui.form;
+
+
+    });
+</script>
+<script>
+    $('#reply').attr("disabled", "disabled");
+
+    function change() {
+        var flag = $("input[name='check']:checked").val();
+        if (flag == 1 || flag == 3) {
+            $('#reply').removeAttr("disabled");
+            $('#reply').val('我们已收到您的反馈内容，并将其整理反馈给有关部门。感谢您对"学生权益"平台的支持！')
+        } else {
+            $('#reply').attr("disabled", "disabled");
+            $('#reply').val('')
+        }
+    }
+</script>
+<script>
+    window.addEventListener('message', function (e) {
+        var value = e.data;
+        //子页面如果接收到的data的值是'return'，则调用返回方法向父页面发送数据
+        if (value != null && value == 'return')
+            //返回数据
+            returnSelectUser()
+        {#else if (value != null && value.trim().length != 0) {#}
+        {#    //do something#}
+        {#}#}
+        }
+    ,
+        false
+    );
+
+    //向父頁面发送數據
+    function returnSelectUser() {
+        var reply = $("#reply").val();
+        var check = document.getElementsByName("check");
+        var checkvalue = null;   //  selectvalue为radio中选中的值
+        for (var i = 0; i < check.length; i++) {
+            if (check[i].checked == true) {
+                checkvalue = check[i].value;
+                break;
+            }
+        }
+
+        var value = {
+            reply: reply,
+            check: checkvalue
+        };
+        parent.postMessage(value, "*");
+    }
+</script>
+</body>
+</html>

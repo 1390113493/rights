@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>话题审核</title>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+</head>
+<body>
+<table id="topic-list-table" lay-filter="topic-list-table"></table>
+<script type="text/html" id="tools">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="check"><i
+            class="layui-icon layui-icon-edit"></i>审核</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs " lay-event="del"><i
+            class="layui-icon layui-icon-delete "></i>删除</a>
+</script>
+{% verbatim %}
+<script type="text/html" id="checkstatus">
+    {{  }}
+    {{#  if(d.check == -1){ }}
+    <button class="layui-btn layui-btn-disabled layui-btn-sm">被驳回</button>
+    {{#  } else if(d.check == 0){ }}
+    <button class="layui-btn layui-btn-primary layui-btn-sm">未审核</button>
+    {{#  } else if(d.check == 1){ }}
+    <button class="layui-btn layui-btn-sm">审核通过</button>
+    {{#  } else if(d.check == 2){ }}
+    <button class="layui-btn layui-btn-danger layui-btn-sm">提交二核</button>
+    {{#  } else if(d.check == 3){ }}
+    <button class="layui-btn layui-btn-warm layui-btn-sm">二审通过</button>
+    {{#  } }}
+</script>
+{% endverbatim %}
+
+<script src="https://www.layuicdn.com/layui/layui.js"></script>
+<script src="/media/jquery-2.1.1.min.js"></script>
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        //第一个实例
+        table.render({
+            elem: '#topic-list-table'
+            , height: 312
+            , url: '#' //数据接口
+            , method: 'post'
+            , page: true //开启分页
+            , cols: [[ //表头
+                {field: 'id', title: 'ID', width: 80, sort: true, fixed: 'left'}
+                , {field: 'title', title: '标题', width: 150}
+                , {field: 'category', title: '分类', width: 120}
+                , {field: 'name', title: '发起人', width: 230, sort: true}
+                , {field: 'create_time', title: '发布时间', width: 170}
+                , {field: 'check', title: '审核状态', width: 110, templet: "#checkstatus", sort: true}
+                , {title: '操作', width: 150, align: 'center', fixed: 'right', toolbar: '#tools'}
+            ]]
+            , limit: 10
+            , limits: [10, 15, 20, 30, 50]
+            , text: {
+                none: '暂无相关数据' //默认：无数据。注：该属性为 layui 2.2.5 开始新增
+            }
+        });
+
+        table.on('tool(topic-list-table)', function (obj) {
+            var data = obj.data;
+            var id = data['id'];
+            if (obj.event === 'del') {
+                layer.confirm("确认删除该话题？", {
+                    btn: ['确认', '取消']
+                }, function () {
+                    $.ajax({
+                        url: 'deltopic',
+                        method: "POST",
+                        data: {
+                            id: id,
+                        },
+                        success: function (res) {
+                            layer.msg(res.msg);
+                            setTimeout(function () {
+                                location.replace(location.href);
+                            }, 900);
+                        }
+                    });
+                }, function () {
+                    // 按钮2的事件
+                });
+            } else if (obj.event === 'check') {
+                var data = obj.data; //获得当前行数据
+                var id = data['id'];  //获取属性uid的值
+                layer.open({
+                    type: 2
+                    , title: '审核话题'
+                    , content: 'checktopic?type={{ type }}&id=' + id
+                    , area: ['650px', '480px']
+                    , btn: ['提交', '取消']
+                    , yes: function (index, layero) {
+                        var iframeWindow = window['layui-layer-iframe' + index]
+                            , submitID = 'LAY-user-back-submit'
+                            , submit = layero.find('iframe').contents().find('#' + submitID);
+
+                        //监听提交
+                        iframeWindow.layui.form.on('submit(' + submitID + ')', function (data1) {
+                            var field = data1.field; //获取提交的字段
+                            console.log(field)
+                            //提交 Ajax 成功后，静态更新表格中的数据
+                            $.ajax({
+                                url: 'checktopic',
+                                method: "POST",
+                                data: field,
+                                success: function (res) {
+                                    layer.msg(res.msg);
+                                    if (res.code == 0) {
+                                        setTimeout(function () {
+                                            table.reload('topic-list-table'); //数据刷新
+                                            layer.close(index); //关闭弹层
+                                        }, 900);
+                                    }
+
+                                }
+                            });
+
+                        });
+
+                        submit.trigger('click');
+                    }
+                    , success: function (layero, index) {
+
+                    }
+                })
+            }
+
+        })
+
+    });
+</script>
+</body>
+</html>
+</body>
+</html>

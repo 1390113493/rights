@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户资料</title>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+    <br>
+
+    <div class="layui-form">
+        <table class="layui-table" width="98%">
+            <tbody>
+            <tr>
+                <td>姓名</td>
+                <td>{{ name }}</td>
+                <td>性别</td>
+                <td>{{ gender }}</td>
+                <td colspan="2" rowspan="3"><img src="{{ headimg }}" width="100%"></td>
+            </tr>
+            <tr>
+                <td>学号</td>
+                <td>{{ student_id }}</td>
+                <td>昵称</td>
+                <td>{{ nickname }}</td>
+            </tr>
+            <tr>
+                <td>手机号</td>
+                <td>{% if phone %}
+                    {{ phone }} {% else %}未填
+                {% endif %} </td>
+                <td>邮箱</td>
+                <td>{% if email %}
+                    {{ email }} {% else %}未填
+                {% endif %} </td>
+            </tr>
+            <tr>
+                <td>微信名</td>
+                <td>{{ wechatname }}</td>
+                <td>QQ号</td>
+                <td>{% if qq %}
+                    {{ qq }} {% else %}未填
+                {% endif %} </td>
+                <td width="30px">已认证</td>
+                <td>{% if auth %}
+                    是 {% else %}否
+                {% endif %} </td>
+            </tr>
+            <tr>
+                <td>宿舍</td>
+                <td>{% if dormitory %}
+                    {{ department }} {% else %}未填
+                {% endif %} </td>
+                <td>出生日期</td>
+                <td>{{ birthday }}</td>
+                <td>话题数</td>
+                <td>{{ count }}</td>
+            </tr>
+            <tr>
+                <td>校区</td>
+                <td>{% if campus %}
+                    {{ campus }} {% else %}未获得
+                {% endif %}</td>
+                <td>院系</td>
+                <td>{{ department }}</td>
+                <td>专业</td>
+                <td>{{ major }}</td>
+            </tr>
+            <tr>
+                <td>班级</td>
+                <td>{{ adminclass }}</td>
+                <td>个性签名</td>
+                <td colspan="3">{{ sign }}</td>
+
+            </tr>
+
+
+            </tbody>
+        </table>
+
+    </div>
+</head>
+<body>
+
+</body>
+</html>

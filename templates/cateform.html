@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>话题分类-{{ type }}</title>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+
+</head>
+<body>
+<br><br><br>
+
+<div class="layui-form">
+<div class="layui-form-item">
+    <label class="layui-form-label">{{ type }}分类</label>
+    <div class="layui-input-inline">
+        <input type="text" name="name" required lay-verify="required" placeholder="请输入分类名称"
+               value="{{ name }}" autocomplete="off" class="layui-input" id="name">
+    </div>
+    <div class="layui-form-mid layui-word-aux">请输入分类名称</div>
+</div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">是否需要系统回复</label>
+        <div class="layui-input-block">
+            <input type="radio" name="needreply" value="0" title="不需要" {% if not needreply %}checked{% endif %}>
+            <input type="radio" name="needreply" value="1" title="需要" {% if needreply %}checked{% endif %}>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://www.layuicdn.com/layui/layui.js"></script>
+<script src="/media/jquery-2.1.1.min.js"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate'], function () {
+        var form = layui.form
+            , layer = layui.layer
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+//监听提交
+
+    })
+</script>
+<script>
+    //Demo
+    layui.use('form', function () {
+        var form = layui.form;
+
+
+    });
+</script>
+<script>
+    window.addEventListener('message', function (e) {
+        var value = e.data;
+        //子页面如果接收到的data的值是'return'，则调用返回方法向父页面发送数据
+        if (value != null && value == 'return')
+            //返回数据
+            returnSelectUser()
+        {#else if (value != null && value.trim().length != 0) {#}
+        {#    //do something#}
+        {#}#}
+        }
+    ,
+        false
+    );
+
+    //向父頁面发送數據
+    function returnSelectUser() {
+        var name = $("#name").val();
+        var needreply = document.getElementsByName("needreply");
+        var needreplyvalue = null;   //  selectvalue为radio中选中的值
+        for (var i = 0; i < needreply.length; i++) {
+            if (needreply[i].checked == true) {
+                needreplyvalue = needreply[i].value;
+                break;
+            }
+        }
+
+        var value = {
+            name: name,
+            needreply: needreplyvalue
+        };
+        parent.postMessage(value, "*");
+    }
+</script>
+</body>
+</html>

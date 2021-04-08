@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>小程序设置</title>
+    <link rel="stylesheet" type="text/css" href="https://www.layuicdn.com/layui/css/layui.css"/>
+    <style>
+        textarea {
+            width: 400px;
+            height: 80px;
+        }
+    </style>
+</head>
+<body>
+<br><br><br>
+
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label">小程序版本号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="version" required lay-verify="required" placeholder="请输入小程序版本号"
+                           value="{{ version }}" autocomplete="off" class="layui-input" id="version">
+                </div>
+                <div class="layui-form-mid layui-word-aux">小程序版本号，如1.1.4</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">使用须知</label>
+                <div class="layui-input-inline">
+                    <textarea name="help" id="help" style="width: 400px;height:80px;"
+                              placeholder="请输入使用须知">{{ help }}</textarea>
+                </div>
+                {#        <div class="layui-form-mid layui-word-aux">使用须知</div>#}
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">关于NEWX</label>
+                <div class="layui-input-inline">
+                    <textarea name="newx" id="newx" placeholder="输入关于NEWX">{{ newx }}</textarea>
+                </div>
+                {#        <div class="layui-form-mid layui-word-aux">NEWX介绍</div>#}
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">关于小程序</label>
+                <div class="layui-input-inline">
+                    <textarea name="us" id="us" placeholder="输入关于小程序">{{ us }}</textarea>
+                </div>
+                {#        <div class="layui-form-mid layui-word-aux">学生权益团队介绍</div>#}
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="appForm">修改小程序信息</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="https://www.layuicdn.com/layui/layui.js"></script>
+<script src="/media/jquery-2.1.1.min.js"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate'], function () {
+        var form = layui.form
+            , layer = layui.layer
+            , layedit = layui.layedit
+            , laydate = layui.laydate;
+        //监听提交
+        form.on('submit(appForm)', function (data) {
+            const version = $("#version").val();
+            const help = $("#help").val();
+            const newx = $("#newx").val();
+            const us = $("#us").val();
+            $.ajax({
+                url: '',
+                method: "POST",
+                data: {
+                    version: version,
+                    help: help,
+                    newx: newx,
+                    us: us
+                },
+                success: function (res) {
+                    layer.msg(res.msg);
+                    setTimeout(function () {
+                        location.replace(location.href);
+                    }, 700);
+                }
+            });
+        });
+    })
+</script>
+<script>
+    //Demo
+    layui.use('form', function () {
+        var form = layui.form;
+
+
+    });
+</script>
+</body>
+</html>
