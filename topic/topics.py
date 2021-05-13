@@ -1,32 +1,39 @@
-from .models import Topic, Reply, Category
+from .models import Topic, Reply, Category, Like, Comment
 from user.models import MyUser
 from common.token import getUserId
 from time import strftime, localtime
 
 
-def getList(page, token):
+def getList(page, token, pid=0):
     userId = getUserId(token)
     if userId['code'] == 0:
         lists = Topic.objects.filter(check__in=[1, 3], user_delete=None, system_delete=None)
+        if pid:
+            lists = lists.filter(pid=pid)
         count = lists.count()
-        listdata = list(lists.values('id', 'pid', 'name', 'headimg', 'title', 'content', 'imgs', 'top', 'like', 'dislike', 'visit', 'create_time'))
-        listdata.sort(key=lambda keys: keys['id'], reverse=True)
-        data = listdata[(page-1)*10:page*10]
+        listdata = list(
+            lists.order_by('-id').values('id', 'pid', 'name', 'headimg', 'title', 'content', 'imgs', 'top', 'visit',
+                                         'create_time'))
+        # listdata.sort(key=lambda keys: keys['id'], reverse=True)
+        data = listdata[(page - 1) * 10:page * 10]
         for i in data:
             i['desca'] = i['content'][:30]
-            i['categort'] = Category.objects.get(id=i['pid']).name
+            i['category'] = Category.objects.get(id=i['pid']).name
             i['imgs'] = eval(i['imgs']) if i['imgs'] else None
+            i['likeCount'] = Like.objects.filter(tid=i['id'], cancel=False).count()
+            i['isLiked'] = True if Like.objects.filter(tid=i['id'], cancel=False, uid=userId['data']['id']) else False
             del i['content']
             del i['pid']
         return {
             'code': 0,
-            'msg': '获取第'+str(page)+'页的数据成功',
+            'msg': '获取第' + str(page) + '页的数据成功',
             'count': count,
             'data': data
         }
 
     else:
         return userId
+
 
 def getDetail(token, id):
     userId = getUserId(token)
@@ -36,17 +43,28 @@ def getDetail(token, id):
         detail.save()
         d = dict()
         d['id'] = detail.id
-        d['category'] = Category.objects.get(id=detail.pid).name
+        d['category'] = detail.pid.name
         d['name'] = detail.name
         d['headimg'] = detail.headimg
         d['title'] = detail.title
         d['content'] = detail.content
         d['imgs'] = eval(detail.imgs) if detail.imgs else None
-        d['like'] = detail.like
-        d['dislike'] = detail.dislike
+        d['likeCount'] = Like.objects.filter(tid=detail.id, cancel=False).count()
+        d['isLiked'] = True if Like.objects.filter(tid=detail.id, cancel=False, uid=userId['data']['id']) else False
         d['visit'] = detail.visit
         d['create_time'] = detail.create_time
-        if Category.objects.get(id=detail.pid).needreply:
+        comments = Comment.objects.filter(pid=detail.id)
+        comment_list = []
+        for comment in comments:
+            comment_list.append({
+                'id': comment.id,
+                'name': comment.uid.name + ' ' + comment.uid.adminclass,
+                'headimg': comment.uid.headimg,
+                'create_time': comment.create_time,
+                'conetnt': comment.content
+            })
+        d['comment'] = comment_list
+        if detail.pid.needreply:
             reply = Reply.objects.get(tid=id)
             r = dict()
             r['id'] = reply.id
@@ -59,8 +77,8 @@ def getDetail(token, id):
             }
         else:
             data = {
-                    'detail': d,
-                }
+                'detail': d,
+            }
         return {
             'code': 0,
             'msg': '获取话题详细内容成功',
@@ -87,10 +105,10 @@ def addTopic(token, data):
         d = dict()
         user = MyUser.objects.get(id=userId)
         if data['hide']:
-            d['name'] = user.nickname+' '+user.major
+            d['name'] = user.nickname + ' ' + user.major
             d['headimg'] = ''
         else:
-            d['name'] = user.name+' '+user.major
+            d['name'] = user.name + ' ' + user.major
             d['headimg'] = user.headimg
         d['title'] = data['title']
         d['pid'] = data['category']
@@ -126,3 +144,57 @@ def getCate(token):
         }
     else:
         return userId
+
+
+def like(token, tid):
+    userId = getUserId(token)
+    if userId['code'] == 0:
+        uid = userId['data']['id']
+        if not Topic.objects.filter(id=tid, user_delete=None, system_delete=None):
+            return {
+                'code': -1,
+                'msg': '话题不存在'
+            }
+        like = Like.objects.filter(uid=uid, tid=tid)
+        if like:
+            cancel = not like[0].cancel
+            like.update(cancel=cancel)
+            if cancel:
+                msg = '取消点赞成功'
+            else:
+                msg = '点赞成功'
+        else:
+            Like.objects.create(uid=uid, tid=tid, cancel=False)
+            msg = '点赞成功'
+        return {
+            'code': 0,
+            'msg': msg
+        }
+
+
+    else:
+        return userId
+
+
+def my_topic(token):
+    userId = getUserId(token)
+    if userId['code'] == 0:
+        uid = userId['data']['id']
+        topics = list(Topic.objects.filter(uid_id=uid, user_delete=None, system_delete=None).values())
+        for topic in topics:
+            topic['category'] = Category.objects.get(id=topic['pid_id']).name
+        return {
+            'code': 0,
+            'msg': '获得话题成功',
+            'data': {
+                'topics': topics
+            }
+        }
+
+
+    else:
+        return userId
+
+
+def del_comment(token, tid):
+    pass

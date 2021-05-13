@@ -1,12 +1,15 @@
 from django.http import JsonResponse
-from .topics import getList, getDetail, addTopic, getCate
+
+from .comment import add
+from .topics import getList, getDetail, addTopic, getCate, like, my_topic
 from .search import sresult
 
-def topiclist(request):
+def topic_list(request):
     if request.method == 'POST':
         token = request.META.get("HTTP_TOKEN")
         page = int(request.POST.get('page', 1))
-        res = getList(page, token)
+        pid = int(request.POST.get('pid', 1))
+        res = getList(page, token, pid)
         return JsonResponse(res)
     else:
         return JsonResponse({
@@ -35,7 +38,7 @@ def detail(request):
         }, status=500)
 
 
-def newtopic(request):
+def new_topic(request):
     if request.method == 'POST':
         data = dict()
         token = request.META.get("HTTP_TOKEN")
@@ -53,10 +56,18 @@ def newtopic(request):
         }, status=500)
 
 
-def addcomment(request):
+def add_comment(request):
     if request.method == 'POST':
         token = request.META.get("HTTP_TOKEN")
-
+        tid = request.POST.get('tid')
+        content = request.POST.get('content')
+        if not (tid and content):
+            return JsonResponse({
+                'code': -1,
+                'msg': '参数错误'
+            })
+        res = add(tid, content, token)
+        return JsonResponse(res)
     else:
         return JsonResponse({
             'code': -1,
@@ -88,6 +99,32 @@ def cate(request):
     if request.method == 'POST':
         token = request.META.get("HTTP_TOKEN")
         res = getCate(token)
+        return JsonResponse(res)
+
+    else:
+        return JsonResponse({
+            'code': -1,
+            'msg': '请使用POST方式来请求该接口！'
+        }, status=500)
+
+def like_topic(request):
+    if request.method == 'POST':
+        token = request.META.get("HTTP_TOKEN")
+        tid = int(request.POST.get('tid', 0))
+        res = like(token, tid)
+        return JsonResponse(res)
+
+    else:
+        return JsonResponse({
+            'code': -1,
+            'msg': '请使用POST方式来请求该接口！'
+        }, status=500)
+
+
+def my(request):
+    if request.method == 'POST':
+        token = request.META.get("HTTP_TOKEN")
+        res = my_topic(token)
         return JsonResponse(res)
 
     else:
